@@ -1,0 +1,32 @@
+# Dependency directories
+node_modules/
+
+# Environment configuration
+.env
+
+# Build artifacts
+dist/
+build/
+out/
+*.log
+npm-debug.log*
+
+# IDE and editor-specific files
+.vscode/
+.idea/
+*.code-workspace
+
+# Compiled output
+*.js
+*.d.ts
+
+# Logs
+logs/
+*.log
+
+# MongoDB data directory
+/data/db
+
+# macOS and Windows system files
+.DS_Store
+Thumbs.db
