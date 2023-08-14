@@ -14,7 +14,8 @@ connection.once('open', async () => {
 
     const users = [];
     for (let i = 0; i < 10; i++) {
-      users.push({ username: getRandomName() });
+      const email = `user${i + 1}@example.com`; // Provide valid email addresses
+      users.push({ username: `${getRandomName()}${i + 1}`, email }); // Include email field
     }
     const createdUsers = await User.insertMany(users);
 
@@ -46,4 +47,3 @@ connection.once('open', async () => {
     connection.close();
   }
 });
-
