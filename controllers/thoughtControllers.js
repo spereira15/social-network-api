@@ -1,5 +1,4 @@
-const { User, Thought } = require('../models'); // Make sure to import the correct models
-
+const { User, Thought } = require('../models');
 const thoughtControllers = {
   // GET all thoughts
   getAllThoughts(req, res) {
