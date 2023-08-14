@@ -1,56 +1,49 @@
 const connection = require('../config/connection');
-const { Course, Student } = require('../models');
-const { getRandomName, getRandomAssignments } = require('./data');
+const { User, Thought, Reaction } = require('../models');
+const { getRandomName } = require('./data');
 
-connection.on('error', (err) => err);
+connection.on('error', (err) => console.error(err));
 
 connection.once('open', async () => {
-  console.log('connected');
-    // Delete the collections if they exist
-    let courseCheck = await connection.db.listCollections({ name: 'courses' }).toArray();
-    if (courseCheck.length) {
-      await connection.dropCollection('courses');
+  console.log('Connected to database.');
+
+  try {
+    await User.deleteMany();
+    await Thought.deleteMany();
+    await Reaction.deleteMany();
+
+    const users = [];
+    for (let i = 0; i < 10; i++) {
+      users.push({ username: getRandomName() });
+    }
+    const createdUsers = await User.insertMany(users);
+
+    const thoughts = [];
+    for (let i = 0; i < 20; i++) {
+      const randomUser = createdUsers[Math.floor(Math.random() * createdUsers.length)];
+      thoughts.push({
+        thoughtText: `Thought ${i + 1}`,
+        username: randomUser.username,
+      });
+    }
+    const createdThoughts = await Thought.insertMany(thoughts);
+
+    for (const thought of createdThoughts) {
+      for (let i = 0; i < 3; i++) {
+        const randomUser = createdUsers[Math.floor(Math.random() * createdUsers.length)];
+        await Reaction.create({
+          reactionBody: `Reaction ${i + 1} to thought ${thought._id}`,
+          username: randomUser.username,
+          thoughtId: thought._id,
+        });
+      }
     }
 
-    let studentsCheck = await connection.db.listCollections({ name: 'students' }).toArray();
-    if (studentsCheck.length) {
-      await connection.dropCollection('students');
-    }
-
-
-  // Create empty array to hold the students
-  const students = [];
-
-  // Loop 20 times -- add students to the students array
-  for (let i = 0; i < 20; i++) {
-    // Get some random assignment objects using a helper function that we imported from ./data
-    const assignments = getRandomAssignments(20);
-
-    const fullName = getRandomName();
-    const first = fullName.split(' ')[0];
-    const last = fullName.split(' ')[1];
-    const github = `${first}${Math.floor(Math.random() * (99 - 18 + 1) + 18)}`;
-
-    students.push({
-      first,
-      last,
-      github,
-      assignments,
-    });
+    console.log('Database seeded successfully!');
+  } catch (error) {
+    console.error('Error seeding database:', error);
+  } finally {
+    connection.close();
   }
-
-  // Add students to the collection and await the results
-  await Student.collection.insertMany(students);
-
-  // Add courses to the collection and await the results
-  await Course.collection.insertOne({
-    courseName: 'UCLA',
-    inPerson: false,
-    students: [...students],
-  });
-
-  // Log out the seed data to indicate what should appear in the database
-  console.table(students);
-  console.info('Seeding complete! 🌱');
-  process.exit(0);
 });
+
